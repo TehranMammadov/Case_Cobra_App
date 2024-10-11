@@ -29,7 +29,16 @@ export const ourFileRouter = {
                 })
                 return { configId: configuration.id }
             } else {
-                
+                const updateConfiguration = await db.configuration.update({
+                    where: {
+                        id: configId
+                    },
+                    data: {
+                        croppedImageUrl: file.url
+                    }
+                })
+
+                return { configId: updateConfiguration.id }
             }
 
             return { configId };

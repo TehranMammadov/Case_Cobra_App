@@ -37,8 +37,6 @@ export const createCheckoutSession = async ({configId}: {configId: string}) => {
         }
     })
 
-    console.log("ID", user.id, configuration.id)
-
     if (existingOrder) {
         order = existingOrder
     } else {

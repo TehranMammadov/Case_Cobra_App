@@ -22,6 +22,7 @@ const DesignPreview = ({configuration}: {configuration: Configuration}) => {
     const { id } = configuration
     const { user } = useKindeBrowserClient()
     const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean> (false)
+    const [isLoading, setIsLoading] = useState<boolean> (false)
     const [showConfetti, setShowConfetti] = useState<boolean>(false)
     const { color, model, finish, material } = configuration
     const tw = COLORS.find(supportedColor => supportedColor.value === color)?.tw
@@ -35,7 +36,10 @@ const DesignPreview = ({configuration}: {configuration: Configuration}) => {
         mutationKey: ["get-checkout-session"],
         mutationFn: createCheckoutSession,
         onSuccess: ({url}) => {
-            if (url) router.push(url)
+            if (url) {
+                router.push(url)
+                setIsLoading(false)
+            }
             else throw new Error("Unable to retrieve payment URL.")
         },
         onError: () => {
@@ -48,11 +52,13 @@ const DesignPreview = ({configuration}: {configuration: Configuration}) => {
     })
 
     const handleCheckOut = () => {
+        setIsLoading(true)
         if (user) {
             createPaymentSession({ configId: id })
         } else {
             localStorage.setItem("configurationId", id)
             setIsLoginModalOpen(true)
+            setIsLoading(false)
         }
     }
 
@@ -69,14 +75,14 @@ const DesignPreview = ({configuration}: {configuration: Configuration}) => {
 
             <LoginModal isOpen={isLoginModalOpen} setIsOpen={setIsLoginModalOpen} />
 
-            <div className="mt-20 grid grid-cols-1 text-sm sm:grid-cols-12 sm:grid-rows-1 sm:gap-x-6 md:gap-x-8 lg:gap-x-12">
-                <div className="sm:col-span-4 md:col-span-3 md:row-span-2 md:row-end-2">
-                    <Phone 
-                        className={cn(`bg-${tw}`)} 
+            <div className="mt-20 flex flex-col items-center md:grid text-sm sm:grid-cols-12 sm:grid-rows-1 sm:gap-x-6 md:gap-x-8 lg:gap-x-12">
+                <div className="md:col-span-4 lg:col-span-3 md:row-span-2 md:row-end-2">
+                    <Phone
+                        className={cn(`bg-${tw}`, "max-w-[150px] md:max-w-full")} 
                         imgSrc={configuration.croppedImageUrl!} 
                     />
                 </div>
-                <div className="mt-6 sm:col-span-9 sm:mt-0 md:row-end-1">
+                <div className="mt-6 sm:col-span-9 md:row-end-1">
                     <h3 className="text-3xl font-bold tracking-tight text-gray-900">Your {modelLabel} Case</h3>
                     <div className="mt-3 flex items-center gap-1.5 text-base">
                         <Check className="h-4 w-4 text-green-500" />
@@ -143,10 +149,10 @@ const DesignPreview = ({configuration}: {configuration: Configuration}) => {
 
                         <div className="mt-8 flex justify-end pb-12">
                             <Button 
+                                isLoading={isLoading}
+                                disabled={isLoading}
+                                loadingText="Loading"
                                 onClick={() => handleCheckOut()}
-                                // disabled={true} 
-                                // isLoading={true} 
-                                loadingText="loading" 
                                 className="px-4 sm:px-6 lg:px8"
                             >
                                 Check out <ArrowRight className="h-4 w-4 ml-1.5 inline" />
